@@ -1,0 +1,20 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.28"
+# the seeded-bug vaults are SUPPOSED to fail; they only run under the `detection` profile
+no_match_path = "test/detection/*"
+
+[invariant]
+runs = 256
+depth = 100
+fail_on_revert = false
+
+[fuzz]
+runs = 1000
+
+# FOUNDRY_PROFILE=detection forge test   -> runs only the seeded-bug vaults (every test there should FAIL)
+[profile.detection]
+match_path = "test/detection/*"
+no_match_path = "lib/**"

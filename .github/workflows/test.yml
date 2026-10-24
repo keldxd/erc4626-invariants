@@ -1,0 +1,54 @@
+name: CI
+
+permissions: {}
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reference:
+    name: Reference vaults pass every check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.5 # pinned so CI behaves exactly like local runs
+
+      - name: Check formatting
+        run: forge fmt --check
+
+      - name: Build
+        run: forge build --sizes
+
+      - name: Run suite on correct vaults
+        run: forge test -vv
+
+  detection:
+    name: Every seeded bug is caught
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.5 # pinned so CI behaves exactly like local runs
+
+      - name: Run detection matrix
+        run: python3 scripts/detection_matrix.py | tee -a "$GITHUB_STEP_SUMMARY"
+        shell: bash -o pipefail {0}
